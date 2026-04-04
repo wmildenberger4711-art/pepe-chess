@@ -1,30 +1,26 @@
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     text-align: center;
 
-    /* city-pop cyberpunk background */
-    background: linear-gradient(135deg, #070712, #120a24, #061a2a);
-    color: #eae6ff;
+    /* soft warm gradient */
+    background: linear-gradient(135deg, #2f3a2f, #3e2f2f, #1e2a2f);
+    color: #f3f1e7;
 }
 
 /* MAIN GAME PANEL */
 #gameContainer {
     margin: 40px auto;
     padding: 20px 25px;
-
     width: fit-content;
 
-    /* distinct but on-theme panel */
-    background: linear-gradient(180deg, #1b1535, #15102a);
+    background: linear-gradient(180deg, #3a2f2f, #2a2323);
 
     border-radius: 16px;
 
-    box-shadow:
-        0 0 0 1px rgba(168, 85, 247, 0.2),
-        0 25px 60px rgba(0, 0, 0, 0.7);
-
-    backdrop-filter: blur(8px);
+    box-shadow: 
+        0 0 10px rgba(255, 180, 120, 0.25),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
 }
 
 /* TITLE + UI TEXT */
@@ -52,22 +48,21 @@ h2 {
     margin: 20px auto;
     padding: 10px;
 
-    /* darker inner board to contrast panel */
-    background: #0f0b1f;
+    background: #2a1f1a; /* darker wood base */
     border-radius: 12px;
 
     box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,0.05),
-        0 10px 30px rgba(0,0,0,0.5);
+        inset 0 0 0 1px rgba(0,0,0,0.4),
+        0 8px 20px rgba(0,0,0,0.5);
 }
 
+/* CELLS */
 /* CELLS */
 .cell {
     width: 70px;
     height: 70px;
 
-    background: #2a1f4a;
-    border-radius: 10px;
+    border-radius: 10px; /* ✅ keep rounded */
 
     display: flex;
     align-items: center;
@@ -75,12 +70,39 @@ h2 {
 
     cursor: pointer;
 
-    transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+
+    border: 1px solid #2a1a12;
 }
 
+/* ❌ REMOVE THIS COMPLETELY */
+/*
 .cell:nth-child(even) {
     background: #241a42;
 }
+*/
+
+/* ✅ wood colors (checkerboard comes from JS) */
+.light {
+    background: linear-gradient(145deg, #e6c79c, #cfa874);
+}
+
+.dark {
+    background: linear-gradient(145deg, #9b6b3f, #6e4521);
+}
+
+/* hover */
+.cell:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
+/* selected */
+.selected {
+    outline: 2px solid #22d3ee;
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.5);
+}
+
 
 .cell:hover {
     transform: scale(1.04);
@@ -103,23 +125,13 @@ h2 {
 
 /* BUTTONS */
 button {
-    margin: 10px 6px;
-    padding: 8px 14px;
-
-    border: none;
-    border-radius: 10px;
-
-    background: #4c1d95;
-    color: #f5f3ff;
-
-    cursor: pointer;
-
-    transition: all 0.2s ease;
+    background: #5a3e36;
+    color: #f5eee6;
 }
 
 button:hover {
-    background: #6d28d9;
-    box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+    background: #7a5448;
+    box-shadow: 0 0 8px rgba(255, 200, 150, 0.3);
 }
 
 button:disabled {
@@ -134,9 +146,19 @@ body::before {
     inset: 0;
 
     background:
-        radial-gradient(circle at 20% 20%, rgba(168,85,247,0.15), transparent 40%),
-        radial-gradient(circle at 80% 30%, rgba(34,211,238,0.12), transparent 45%),
-        radial-gradient(circle at 50% 80%, rgba(236,72,153,0.10), transparent 50%);
+        radial-gradient(circle at 20% 30%, rgba(255, 200, 150, 0.12), transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(140, 200, 170, 0.10), transparent 45%),
+        radial-gradient(circle at 50% 90%, rgba(255, 180, 120, 0.08), transparent 50%);
 
     pointer-events: none;
 }
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: url("https://www.transparenttextures.com/patterns/noise.png");
+    opacity: 0.05;
+    pointer-events: none;
+}
+

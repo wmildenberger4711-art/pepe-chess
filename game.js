@@ -95,6 +95,14 @@ function drawBoard(){
             const cell = document.createElement("div");
             cell.classList.add("cell");
 
+            // ✅ checkerboard colors
+            if ((x + y) % 2 === 0){
+                cell.classList.add("light");
+            } else {
+                cell.classList.add("dark");
+            }
+
+            // ✅ selected highlight
             if (selected && selected.x === x && selected.y === y){
                 cell.classList.add("selected");
             }
@@ -108,17 +116,16 @@ function drawBoard(){
                 img.style.height = "100%";
                 img.style.objectFit = "contain";
 
-                if (piece.moves >= 1){
-                    img.style.opacity = "0.65";
-                }
                 cell.appendChild(img);
+
+                // ✅ fade after 1 move
+                if (piece.moves >= 1){
+                    cell.style.opacity = "0.6";
+                }
             }
 
-            if (piece && piece.moves >= 2){
-                cell.style.opacity = "0.4";
-            }
-
-            cell.onclick = () => handleClick(x,y);
+            // click handler
+            cell.onclick = () => handleClick(x, y);
 
             boardDiv.appendChild(cell);
         }
