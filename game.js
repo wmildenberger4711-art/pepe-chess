@@ -1,4 +1,4 @@
-const SIZE = 5;
+const SIZE = 6;
 
 // --------------------
 // DAILY STATE
@@ -14,9 +14,11 @@ let startTime = Date.now();
 let timerInterval = null;
 let elapsedSeconds = 0;
 
-let boardAttempts = [0,0,0,0,0];
-let boardCompleted = [false,false,false,false,false];
-let boardUsedReset = [false,false,false,false,false];
+const TOTAL_BOARDS = 5;
+
+let boardAttempts = Array(TOTAL_BOARDS).fill(0);
+let boardCompleted = Array(TOTAL_BOARDS).fill(false);
+let boardUsedReset = Array(TOTAL_BOARDS).fill(false);
 
 let gameFinished = false;
 
