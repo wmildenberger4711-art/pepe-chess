@@ -22,6 +22,15 @@ let boardUsedReset = Array(TOTAL_BOARDS).fill(false);
 
 let gameFinished = false;
 
+const pieceImages = {
+    king: "assets/pepe-king.png",
+    queen: "assets/pepe-queen.png",
+    rook: "assets/pepe-rook.png",
+    bishop: "assets/pepe-bishop.png",
+    knight: "assets/pepe-knight.png",
+    pawn: "assets/pepe-pawn.png"
+};
+
 // --------------------
 // INIT
 // --------------------
@@ -93,14 +102,16 @@ function drawBoard(){
             const piece = board[y][x];
 
             if (piece){
-                switch(piece.type){
-                    case "rook": cell.textContent = "♖"; break;
-                    case "bishop": cell.textContent = "♗"; break;
-                    case "queen": cell.textContent = "♕"; break;
-                    case "king": cell.textContent = "♔"; break;
-                    case "knight": cell.textContent = "♘"; break;
-                    case "pawn": cell.textContent = "♙"; break;
+                const img = document.createElement("img");
+                img.src = pieceImages[piece.type];
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "contain";
+
+                if (piece.moves >= 1){
+                    img.style.opacity = "0.65";
                 }
+                cell.appendChild(img);
             }
 
             if (piece && piece.moves >= 2){
