@@ -24,7 +24,12 @@ let gameFinished = false;
 // INIT
 // --------------------
 function initGame(){
-    originalBoards = getTestBoards();
+    const seed = getDailySeed();
+    const pool = getBoardPool();
+
+    const selectedBoards = pickDailyBoards(pool, seed, 5);
+
+    originalBoards = selectedBoards;
 
     boards = originalBoards.map(board =>
         board.map(row =>
@@ -36,53 +41,7 @@ function initGame(){
     drawBoard();
 }
 
-// --------------------
-// TEST BOARDS
-// --------------------
-function getTestBoards(){
-    return [
 
-        [
-            [null,null,null,null,null],
-            [null,null,null,null,null],
-            [null,null,{type:"king",moves:0},null,null],
-            [null,null,{type:"rook",moves:0},null,null],
-            [null,{type:"bishop",moves:0},null,null,null]
-        ],
-
-        [
-            [null,null,null,null,null],
-            [null,null,null,null,null],
-            [null,null,{type:"king",moves:0},null,null],
-            [null,null,{type:"rook",moves:0},null,null],
-            [null,{type:"bishop",moves:0},null,null,null]
-        ],
-
-        [
-            [null,null,null,null,null],
-            [null,null,null,null,null],
-            [null,null,{type:"king",moves:0},null,null],
-            [null,null,{type:"rook",moves:0},null,null],
-            [null,{type:"bishop",moves:0},null,null,null]
-        ],
-
-        [
-            [null,null,null,null,null],
-            [null,null,null,null,null],
-            [null,null,{type:"king",moves:0},null,null],
-            [null,null,{type:"rook",moves:0},null,null],
-            [null,{type:"bishop",moves:0},null,null,null]
-        ],
-
-        [
-            [null,null,null,null,null],
-            [null,null,null,null,null],
-            [null,null,{type:"king",moves:0},null,null],
-            [null,null,{type:"rook",moves:0},null,null],
-            [null,{type:"bishop",moves:0},null,null,null]
-        ]
-    ];
-}
 
 // --------------------
 // TIMER
@@ -117,6 +76,7 @@ const boardDiv = document.getElementById("board");
 function drawBoard(){
     boardDiv.innerHTML = "";
 
+    if (!boards[currentBoardIndex]) return;
     const board = boards[currentBoardIndex];
 
     for (let y = 0; y < SIZE; y++){
@@ -194,11 +154,15 @@ function updateStatus(){
 // CLICK HANDLER
 // --------------------
 function handleClick(x, y){
+    if (gameFinished) return;
+
     const board = boards[currentBoardIndex];
     const clickedPiece = board[y][x];
 
+    // ignore empty clicks if nothing selected
     if (!selected && !clickedPiece) return;
 
+    // deselect if clicking empty square
     if (selected && !clickedPiece){
         selected = null;
         drawBoard();
@@ -207,52 +171,63 @@ function handleClick(x, y){
 
     if (selected){
 
+        // prevent clicking same square
         if (selected.x === x && selected.y === y) return;
 
         const piece = board[selected.y][selected.x];
         const targetPiece = board[y][x];
 
+        // must capture something
         if (!targetPiece) return;
 
         if (isValidMove(selected.x, selected.y, x, y)){
 
+            // enforce move limit
             if (piece.moves >= 2) return;
 
-            if (targetPiece.type === "king"){
-                const nonKingsLeft = countNonKings(board);
+            // 🔥 apply move ONCE
+            board[y][x] = piece;
+            board[selected.y][selected.x] = null;
+            piece.moves++;
 
-                if (nonKingsLeft === 1){
-                    boardCompleted[currentBoardIndex] = true;
+            const capturedKing = targetPiece.type === "king";
 
-                    if (currentBoardIndex < 4){
+            selected = null;
+
+            // 🎯 WIN CONDITION
+            if (capturedKing){
+
+                boardCompleted[currentBoardIndex] = true;
+
+                drawBoard(); // show final capture visually
+
+                // move to next board or finish game
+                if (currentBoardIndex < 4){
+                    setTimeout(() => {
                         currentBoardIndex++;
                         selected = null;
                         drawBoard();
-                        return;
-                    } else {
+                    }, 400);
+                } else {
+                    setTimeout(() => {
                         gameFinished = true;
                         stopTimer();
-                        drawBoard(); // ✅ ensures share button appears
-                        return;
-                    }
-                } else {
-                    boardAttempts[currentBoardIndex]++;
+                        drawBoard();
+                    }, 400);
                 }
+
+                return;
             }
 
-            board[y][x] = piece;
-            board[selected.y][selected.x] = null;
-
-            piece.moves++;
-
-            selected = null;
+            // normal move redraw
             drawBoard();
             return;
         }
     }
 
+    // select a piece
     if (clickedPiece){
-        selected = {x, y};
+        selected = { x, y };
         drawBoard();
     }
 }
@@ -374,6 +349,41 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("resetBtn")?.addEventListener("click", resetCurrentBoard);
     document.getElementById("shareBtn")?.addEventListener("click", shareResult);
 });
+
+function getDailySeed(){
+    const today = new Date();
+    return today.getFullYear()*10000 + (today.getMonth()+1)*100 + today.getDate();
+}
+
+function pickDailyBoards(pool, seed, count){
+    const rng = mulberry32(seed);
+
+    let indices = pool.map((_, i) => i);
+
+    // shuffle indices deterministically
+    for (let i = indices.length - 1; i > 0; i--){
+        const j = Math.floor(rng() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+
+    // take first N boards
+    return indices.slice(0, count).map(i => cloneBoard(pool[i]));
+}
+
+function mulberry32(a){
+    return function(){
+        let t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+}
+
+function cloneBoard(board){
+    return board.map(row =>
+        row.map(cell => cell ? {...cell} : null)
+    );
+}
 
 // --------------------
 // START
