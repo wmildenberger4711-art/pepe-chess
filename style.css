@@ -187,3 +187,64 @@ button:disabled {
     margin-top: 10px;
     color: #f3f1e7;
 }
+
+#controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* Hide default checkbox */
+.toggle-switch input {
+    display: none;
+}
+
+/* Switch container */
+.toggle-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Track */
+.toggle-switch .slider {
+    width: 44px;
+    height: 22px;
+    background: #5a4638;
+    border-radius: 999px;
+    position: relative;
+    transition: 0.3s;
+}
+
+/* Knob */
+.toggle-switch .slider::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 2px;
+    top: 2px;
+    background: #f4eadb;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+/* Checked state */
+.toggle-switch input:checked + .slider {
+    background: #8fa3b8;
+}
+
+.toggle-switch input:checked + .slider::before {
+    transform: translateX(22px);
+}
+
+/* Optional label text */
+.toggle-text {
+    color: #f4eadb;
+    user-select: none;
+}

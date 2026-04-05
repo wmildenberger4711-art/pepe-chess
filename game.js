@@ -14,6 +14,7 @@ let kingCaptured = false;
 let startTime = Date.now();
 let timerInterval = null;
 let elapsedSeconds = 0;
+let currentPieceSet = "pepe";
 
 const TOTAL_BOARDS = 5;
 
@@ -23,13 +24,23 @@ let boardUsedReset = Array(TOTAL_BOARDS).fill(false);
 
 let gameFinished = false;
 
-const pieceImages = {
-    king: "assets/pepe-king.png",
-    queen: "assets/pepe-queen.png",
-    rook: "assets/pepe-rook.png",
-    bishop: "assets/pepe-bishop.png",
-    knight: "assets/pepe-knight.png",
-    pawn: "assets/pepe-pawn.png"
+const pieceSets = {
+    pepe: {
+        king: "assets/pepe-king.png",
+        queen: "assets/pepe-queen.png",
+        rook: "assets/pepe-rook.png",
+        bishop: "assets/pepe-bishop.png",
+        knight: "assets/pepe-knight.png",
+        pawn: "assets/pepe-pawn.png"
+    },
+    classic: {
+        king: "assets/classic-king.svg",
+        queen: "assets/classic-queen.svg",
+        rook: "assets/classic-rook.svg",
+        bishop: "assets/classic-bishop.svg",
+        knight: "assets/classic-knight.svg",
+        pawn: "assets/classic-pawn.svg"
+    }
 };
 
 // --------------------
@@ -119,7 +130,7 @@ function drawBoard(){
 
             if (piece){
                 const img = document.createElement("img");
-                img.src = pieceImages[piece.type];
+                img.src = pieceSets[currentPieceSet][piece.type];
                 img.style.width = "100%";
                 img.style.height = "100%";
                 img.style.objectFit = "contain";
@@ -396,6 +407,11 @@ Time: ${formatTime(elapsedSeconds)}`;
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("resetBtn")?.addEventListener("click", resetCurrentBoard);
     document.getElementById("shareBtn")?.addEventListener("click", shareResult);
+
+    document.getElementById("pieceToggle")?.addEventListener("change", (e) => {
+        currentPieceSet = e.target.checked ? "classic" : "pepe";
+        drawBoard();
+    });
 });
 
 function getDailySeed(){
