@@ -16,7 +16,7 @@ let elapsedSeconds = 0;
 
 const TOTAL_BOARDS = 5;
 
-let boardAttempts = Array(TOTAL_BOARDS).fill(0);
+let boardAttempts = Array(TOTAL_BOARDS).fill(1);
 let boardCompleted = Array(TOTAL_BOARDS).fill(false);
 let boardUsedReset = Array(TOTAL_BOARDS).fill(false);
 
@@ -179,10 +179,8 @@ function handleClick(x, y){
     const board = boards[currentBoardIndex];
     const clickedPiece = board[y][x];
 
-    // ignore empty clicks if nothing selected
     if (!selected && !clickedPiece) return;
 
-    // deselect if clicking empty square
     if (selected && !clickedPiece){
         selected = null;
         drawBoard();
@@ -190,8 +188,6 @@ function handleClick(x, y){
     }
 
     if (selected){
-
-        // prevent clicking same square
         if (selected.x === x && selected.y === y) return;
 
         const piece = board[selected.y][selected.x];
@@ -201,27 +197,25 @@ function handleClick(x, y){
         if (!targetPiece) return;
 
         if (isValidMove(selected.x, selected.y, x, y)){
-
             // enforce move limit
             if (piece.moves >= 2) return;
 
-            // 🔥 apply move ONCE
+            // optional: prevent capturing the king entirely
+            if (targetPiece.type === "king") return;
+
+            // make the capture
             board[y][x] = piece;
             board[selected.y][selected.x] = null;
             piece.moves++;
 
-            const capturedKing = targetPiece.type === "king";
-
             selected = null;
 
-            // 🎯 WIN CONDITION
-            if (capturedKing){
-
+            // win when only king remains
+            if (countNonKings(board) === 0){
                 boardCompleted[currentBoardIndex] = true;
 
-                drawBoard(); // show final capture visually
+                drawBoard();
 
-                // move to next board or finish game
                 if (currentBoardIndex < 4){
                     setTimeout(() => {
                         currentBoardIndex++;
@@ -239,13 +233,11 @@ function handleClick(x, y){
                 return;
             }
 
-            // normal move redraw
             drawBoard();
             return;
         }
     }
 
-    // select a piece
     if (clickedPiece){
         selected = { x, y };
         drawBoard();

@@ -55,11 +55,11 @@ return [
 /* 6 */
 [
   [{type:"knight",moves:0},null,{type:"knight",moves:0},null,null,null],
-  [null,null,null,null,null,{type:"knight",moves:0}],
-  [null,{type:"knight",moves:0},null,{type:"knight",moves:0},null,null],
-  [{type:"knight",moves:0},null,null,null,{type:"knight",moves:0},null],
+  [null,null,null,null,null,null],
+  [null,{type:"knight",moves:0},null,null,{type:"knight",moves:0},null],
   [null,null,{type:"knight",moves:0},null,null,null],
-  [{type:"king",moves:0},null,null,null,{type:"knight",moves:0},null]
+  [{type:"knight",moves:0},null,null,{type:"knight",moves:0},null,null],
+  [{type:"king",moves:0},{type:"knight",moves:0},null,null,null,{type:"knight",moves:0}]
 ],
 
 /* 7 */
