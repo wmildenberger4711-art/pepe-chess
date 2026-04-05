@@ -18,7 +18,7 @@ body {
 
     background:
         linear-gradient(rgba(72, 52, 36, 0.18), rgba(72, 52, 36, 0.18)),
-        linear-gradient(180deg, #c9ab84 0%, #b89068 45%, #a47850 100%);
+        linear-gradient(180deg, #042b00 0%, #005318 45%, #042b00 100%);
 }
 
 /* subtle paper grain */
@@ -95,7 +95,7 @@ h2 {
     padding: 12px;
 
     background:
-        linear-gradient(180deg, #4c3222, #372318);
+        linear-gradient(180deg, #1f1a16, #1f1a16);
     border-radius: 14px;
 
     box-shadow:
@@ -175,4 +175,15 @@ button:disabled {
     background: #4a4039;
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.highlight-move {
+    filter: brightness(0.7);
+    box-shadow: inset 0 0 0 2px rgba(255, 220, 150, 0.4);
+}
+
+#ruleText {
+    display: block;
+    margin-top: 10px;
+    color: #f3f1e7;
 }

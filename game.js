@@ -6,6 +6,7 @@ const SIZE = 6;
 let boards = [];
 let originalBoards = [];
 let currentBoardIndex = 0;
+let highlightedMoves = [];
 
 let selected = null;
 let kingCaptured = false;
@@ -50,6 +51,7 @@ function initGame(){
 
     startTimer();
     drawBoard();
+    updateRuleText();
 }
 
 
@@ -95,16 +97,22 @@ function drawBoard(){
             const cell = document.createElement("div");
             cell.classList.add("cell");
 
-            // ✅ checkerboard colors
+            // checkerboard colors
             if ((x + y) % 2 === 0){
                 cell.classList.add("light");
             } else {
                 cell.classList.add("dark");
             }
 
-            // ✅ selected highlight
+            // selected piece highlight
             if (selected && selected.x === x && selected.y === y){
                 cell.classList.add("selected");
+            }
+
+            // ✅ highlight valid moves
+            const isHighlighted = highlightedMoves.some(m => m.x === x && m.y === y);
+            if (isHighlighted){
+                cell.classList.add("highlight-move");
             }
 
             const piece = board[y][x];
@@ -118,7 +126,7 @@ function drawBoard(){
 
                 cell.appendChild(img);
 
-                // ✅ fade after 1 move
+                // fade after 1 move
                 if (piece.moves >= 1){
                     cell.style.opacity = "0.6";
                 }
@@ -179,69 +187,97 @@ function handleClick(x, y){
     const board = boards[currentBoardIndex];
     const clickedPiece = board[y][x];
 
-    if (!selected && !clickedPiece) return;
+    // --------------------
+    // No selection yet
+    // --------------------
+    if (!selected){
+        if (!clickedPiece) return;
 
-    if (selected && !clickedPiece){
-        selected = null;
+        selected = { x, y };
+        highlightedMoves = getValidMovesForSelected();
         drawBoard();
         return;
     }
 
-    if (selected){
-        if (selected.x === x && selected.y === y) return;
+    // --------------------
+    // Clicking same tile → deselect
+    // --------------------
+    if (selected.x === x && selected.y === y){
+        selected = null;
+        highlightedMoves = [];
+        drawBoard();
+        return;
+    }
 
-        const piece = board[selected.y][selected.x];
-        const targetPiece = board[y][x];
+    const piece = board[selected.y][selected.x];
+    const targetPiece = board[y][x];
 
-        // must capture something
-        if (!targetPiece) return;
+    // --------------------
+    // Empty square clicked → deselect
+    // --------------------
+    if (!targetPiece){
+        selected = null;
+        highlightedMoves = [];
+        drawBoard();
+        return;
+    }
 
-        if (isValidMove(selected.x, selected.y, x, y)){
-            // enforce move limit
-            if (piece.moves >= 2) return;
+    // --------------------
+    // Attempt move (capture only)
+    // --------------------
+    if (isValidMove(selected.x, selected.y, x, y)){
 
-            // optional: prevent capturing the king entirely
-            if (targetPiece.type === "king") return;
+        // enforce move limit
+        if (piece.moves >= 2) return;
 
-            // make the capture
-            board[y][x] = piece;
-            board[selected.y][selected.x] = null;
-            piece.moves++;
+        // prevent capturing king
+        if (targetPiece.type === "king") return;
 
-            selected = null;
+        // make the capture
+        board[y][x] = piece;
+        board[selected.y][selected.x] = null;
+        piece.moves++;
 
-            // win when only king remains
-            if (countNonKings(board) === 0){
-                boardCompleted[currentBoardIndex] = true;
+        // clear selection + highlights
+        selected = null;
+        highlightedMoves = [];
 
-                drawBoard();
-
-                if (currentBoardIndex < 4){
-                    setTimeout(() => {
-                        currentBoardIndex++;
-                        selected = null;
-                        drawBoard();
-                    }, 400);
-                } else {
-                    setTimeout(() => {
-                        gameFinished = true;
-                        stopTimer();
-                        drawBoard();
-                    }, 400);
-                }
-
-                return;
-            }
+        // --------------------
+        // win condition
+        // --------------------
+        if (countNonKings(board) === 0){
+            boardCompleted[currentBoardIndex] = true;
 
             drawBoard();
+
+            if (currentBoardIndex < 4){
+                setTimeout(() => {
+                    currentBoardIndex++;
+                    selected = null;
+                    highlightedMoves = [];
+                    drawBoard();
+                }, 400);
+            } else {
+                setTimeout(() => {
+                    gameFinished = true;
+                    stopTimer();
+                    drawBoard();
+                }, 400);
+            }
+
             return;
         }
+
+        drawBoard();
+        return;
     }
 
-    if (clickedPiece){
-        selected = { x, y };
-        drawBoard();
-    }
+    // --------------------
+    // Invalid move → keep selection but refresh highlights
+    // --------------------
+    selected = null;
+    highlightedMoves = [];
+    drawBoard();
 }
 
 // --------------------
@@ -396,6 +432,61 @@ function cloneBoard(board){
         row.map(cell => cell ? {...cell} : null)
     );
 }
+
+function clearHighlights() {
+    document.querySelectorAll('.cell').forEach(cell => {
+        cell.classList.remove('highlight-move');
+    });
+}
+
+function selectPiece(cell) {
+    clearHighlights();
+
+    const moves = getValidMoves(cell); // your existing logic
+
+    moves.forEach(move => {
+        const targetCell = document.querySelector(`[data-row="${move.row}"][data-col="${move.col}"]`);
+        if (targetCell) {
+            targetCell.classList.add('highlight-move');
+        }
+    });
+}
+
+function getValidMovesForSelected() {
+    if (!selected) return [];
+
+    const board = boards[currentBoardIndex];
+    const moves = [];
+
+    const piece = board[selected.y][selected.x];
+
+    for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+
+            if (x === selected.x && y === selected.y) continue;
+
+            const target = board[y][x];
+
+            // must capture something
+            if (!target) continue;
+
+            if (isValidMove(selected.x, selected.y, x, y)) {
+                if (piece.moves < 2 && target.type !== "king") {
+                    moves.push({ x, y });
+                }
+            }
+        }
+    }
+
+    return moves;
+}
+function updateRuleText(){
+    const el = document.getElementById("ruleText");
+    if (!el) return;
+
+    el.textContent = "♟️ King must capture the last remaining piece to complete the board.";
+}
+
 
 // --------------------
 // START
