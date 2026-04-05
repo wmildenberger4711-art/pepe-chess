@@ -179,7 +179,7 @@ button:disabled {
 
 .highlight-move {
     filter: brightness(0.7);
-    box-shadow: inset 0 0 0 2px rgba(255, 220, 150, 0.4);
+    box-shadow: inset 0 0 0 2px rgba(50, 250, 183, 0.559);
 }
 
 #ruleText {
@@ -247,4 +247,32 @@ button:disabled {
 .toggle-text {
     color: #f4eadb;
     user-select: none;
+}
+
+.piece-half {
+    position: relative;
+}
+
+.piece-half::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top right,
+        rgba(0, 0, 0, 0.354) 50%,
+        transparent 50%
+    );
+    pointer-events: none;
+}
+
+.piece-full {
+    position: relative;
+}
+
+.piece-full::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.354);
+    pointer-events: none;
 }

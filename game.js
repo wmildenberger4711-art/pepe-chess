@@ -138,8 +138,12 @@ function drawBoard(){
                 cell.appendChild(img);
 
                 // fade after 1 move
-                if (piece.moves >= 1){
-                    cell.style.opacity = "0.6";
+                if (piece.moves === 1){
+                    cell.classList.add("piece-half");
+                }
+
+                if (piece.moves >= 2){
+                    cell.classList.add("piece-full");
                 }
             }
 
@@ -485,34 +489,155 @@ function getValidMovesForSelected() {
 
     const board = boards[currentBoardIndex];
     const moves = [];
-
     const piece = board[selected.y][selected.x];
 
-    for (let y = 0; y < SIZE; y++) {
-        for (let x = 0; x < SIZE; x++) {
+    if (piece.moves >= 2) return [];
 
-            if (x === selected.x && y === selected.y) continue;
+    const directions = {
+        rook: [
+            {dx: 1, dy: 0}, {dx: -1, dy: 0},
+            {dx: 0, dy: 1}, {dx: 0, dy: -1}
+        ],
+        bishop: [
+            {dx: 1, dy: 1}, {dx: -1, dy: -1},
+            {dx: 1, dy: -1}, {dx: -1, dy: 1}
+        ],
+        queen: [
+            {dx: 1, dy: 0}, {dx: -1, dy: 0},
+            {dx: 0, dy: 1}, {dx: 0, dy: -1},
+            {dx: 1, dy: 1}, {dx: -1, dy: -1},
+            {dx: 1, dy: -1}, {dx: -1, dy: 1}
+        ]
+    };
+
+    // --------------------
+    // SLIDING PIECES
+    // --------------------
+    if (["rook", "bishop", "queen"].includes(piece.type)) {
+        for (let dir of directions[piece.type]) {
+            let x = selected.x + dir.dx;
+            let y = selected.y + dir.dy;
+
+            while (x >= 0 && x < SIZE && y >= 0 && y < SIZE) {
+                const target = board[y][x];
+
+                if (!target) {
+                    // empty square → valid move
+                    moves.push({ x, y });
+                } else {
+                    // piece found
+                    if (target.type !== "king") {
+                        moves.push({ x, y }); // capture
+                    }
+                    break; // stop in this direction
+                }
+
+                x += dir.dx;
+                y += dir.dy;
+            }
+        }
+    }
+
+    // --------------------
+    // KNIGHT
+    // --------------------
+    if (piece.type === "knight") {
+        const jumps = [
+            {dx: 2, dy: 1}, {dx: 2, dy: -1},
+            {dx: -2, dy: 1}, {dx: -2, dy: -1},
+            {dx: 1, dy: 2}, {dx: 1, dy: -2},
+            {dx: -1, dy: 2}, {dx: -1, dy: -2}
+        ];
+
+        for (let j of jumps) {
+            const x = selected.x + j.dx;
+            const y = selected.y + j.dy;
+
+            if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) continue;
 
             const target = board[y][x];
 
-            // must capture something
-            if (!target) continue;
+            if (!target || target.type !== "king") {
+                moves.push({ x, y });
+            }
+        }
+    }
 
-            if (isValidMove(selected.x, selected.y, x, y)) {
-                if (piece.moves < 2 && target.type !== "king") {
+    // --------------------
+    // KING
+    // --------------------
+    if (piece.type === "king") {
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                if (dx === 0 && dy === 0) continue;
+
+                const x = selected.x + dx;
+                const y = selected.y + dy;
+
+                if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) continue;
+
+                const target = board[y][x];
+
+                if (!target || target.type !== "king") {
                     moves.push({ x, y });
                 }
             }
         }
     }
 
+    // --------------------
+    // PAWN (your custom capture-only)
+    // --------------------
+    if (piece.type === "pawn") {
+        const x = selected.x;
+        const y = selected.y;
+
+        const attacks = [
+            {dx: -1, dy: -1},
+            {dx: 1, dy: -1}
+        ];
+
+        for (let a of attacks) {
+            const nx = x + a.dx;
+            const ny = y + a.dy;
+
+            if (nx < 0 || nx >= SIZE || ny < 0 || ny >= SIZE) continue;
+
+            const target = board[ny][nx];
+
+            if (target && target.type !== "king") {
+                moves.push({ x: nx, y: ny });
+            }
+        }
+    }
+
     return moves;
 }
+
 function updateRuleText(){
     const el = document.getElementById("ruleText");
     if (!el) return;
 
     el.textContent = "♟️ King must capture the last remaining piece to complete the board.";
+}
+
+function getPathSquares(board, fromX, fromY, toX, toY){
+    const squares = [];
+
+    let dx = Math.sign(toX - fromX);
+    let dy = Math.sign(toY - fromY);
+
+    let x = fromX + dx;
+    let y = fromY + dy;
+
+    while (x !== toX || y !== toY){
+        if (board[y][x] !== null) return []; // blocked → no path
+        squares.push({ x, y });
+        x += dx;
+        y += dy;
+    }
+
+    return squares;
 }
 
 
