@@ -35,12 +35,12 @@ const pieceSets = {
         pawn: "assets/pepe-pawn.png"
     },
     classic: {
-        king: "assets/classic-king.svg",
-        queen: "assets/classic-queen.svg",
-        rook: "assets/classic-rook.svg",
-        bishop: "assets/classic-bishop.svg",
-        knight: "assets/classic-knight.svg",
-        pawn: "assets/classic-pawn.svg"
+        king: "assets/sprite-king.png",
+        queen: "assets/sprite-queen.png",
+        rook: "assets/sprite-rook.png",
+        bishop: "assets/sprite-bishop.png",
+        knight: "assets/sprite-knight.png",
+        pawn: "assets/sprite-pawn.png"
     }
 };
 
