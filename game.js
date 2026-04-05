@@ -7,6 +7,7 @@ let boards = [];
 let originalBoards = [];
 let currentBoardIndex = 0;
 let highlightedMoves = [];
+let timerStarted = false;
 
 let selected = null;
 let kingCaptured = false;
@@ -60,7 +61,6 @@ function initGame(){
         )
     );
 
-    startTimer();
     drawBoard();
     updateRuleText();
 }
@@ -193,6 +193,18 @@ function updateStatus(){
 // CLICK HANDLER
 // --------------------
 function handleClick(x, y){
+    // ✅ start timer on first meaningful interaction
+    if (!timerStarted){
+        const board = boards[currentBoardIndex];
+        const clickedPiece = board[y][x];
+
+        // only start timer if user clicks a piece (not empty square)
+        if (clickedPiece){
+            timerStarted = true;
+            startTimer();
+        }
+    }
+
     if (gameFinished) return;
 
     const board = boards[currentBoardIndex];
@@ -284,7 +296,7 @@ function handleClick(x, y){
     }
 
     // --------------------
-    // Invalid move → keep selection but refresh highlights
+    // Invalid move → reset selection
     // --------------------
     selected = null;
     highlightedMoves = [];
