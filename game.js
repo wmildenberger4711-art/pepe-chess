@@ -144,6 +144,10 @@ function drawBoard(){
                 img.draggable = true;
 
                 img.addEventListener("dragstart", (e) => {
+                    if(gameFinished){
+                        e.preventDefault();
+                        return;
+                    }
                     if (piece.moves >= 2) {
                         e.preventDefault();
                         return;
@@ -180,6 +184,7 @@ function drawBoard(){
             });
 
             cell.addEventListener("drop", (e) => {
+                if(gameFinished) return;
                 e.preventDefault();
 
                 const data = e.dataTransfer.getData("text/plain");
@@ -237,6 +242,7 @@ function updateStatus(){
 // CLICK HANDLER
 // --------------------
 function handleClick(x, y){
+    if(gameFinished) return
     if (!timerStarted){
         const board = boards[currentBoardIndex];
         const clickedPiece = board[y][x];
@@ -619,6 +625,8 @@ function getPathSquares(board, fromX, fromY, toX, toY){
 }
 
 function attemptMove(fromX, fromY, toX, toY){
+if (gameFinished) return;
+
     const board = boards[currentBoardIndex];
     const piece = board[fromY][fromX];
     const targetPiece = board[toY][toX];
@@ -661,6 +669,8 @@ function attemptMove(fromX, fromY, toX, toY){
                 gameFinished = true;
                 stopTimer();
                 markPlayed();
+                localStorage.setItem("gameCompleted", "true");
+                localStorage.setItem("finalTime", elapsedSeconds);
                 drawBoard();
             }, 400);
         }
@@ -696,6 +706,10 @@ function showComeBackTomorrow() {
     // optionally hide buttons
 }
 
+function hasCompletedToday() {
+    return localStorage.getItem("gameCompleted") === "true";
+}
+
 
 // --------------------
 // START
@@ -712,10 +726,21 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ✅ START GAME HERE
-    if (!canPlayToday()) {
-        showComeBackTomorrow();
-    } else {
-        initGame();
+    // ✅ ALWAYS init first
+    initGame();
+
+    const completed = hasCompletedToday();
+
+    if (completed) {
+        gameFinished = true;
+        stopTimer();
+
+        const savedTime = localStorage.getItem("finalTime");
+        if (savedTime) {
+            elapsedSeconds = parseInt(savedTime, 10);
+        }
     }
+
+    drawBoard();
+    updateStatus();
 });
