@@ -410,7 +410,9 @@ function shareResult(){
     const text =
 `🟩 Pepe Capture Daily
 ${blocks}
-Time: ${formatTime(elapsedSeconds)}`;
+Time: ${formatTime(elapsedSeconds)}
+
+https://wmildenberger4711-art.github.io/pepe-chess/`;
 
     navigator.clipboard.writeText(text).then(() => {
         alert("Copied to clipboard!");
