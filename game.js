@@ -97,9 +97,10 @@ function formatTime(seconds){
 // --------------------
 // BOARD DRAW
 // --------------------
-const boardDiv = document.getElementById("board");
+
 
 function drawBoard(){
+    const boardDiv = document.getElementById("board"); // 👈 MOVE HERE
     boardDiv.innerHTML = "";
 
     if (!boards[currentBoardIndex]) return;
@@ -392,11 +393,10 @@ function shareResult(){
     }).join("");
 
     const text =
-`🟩 Pepe Capture Daily
-${blocks}
-Time: ${formatTime(elapsedSeconds)}
-
-https://wmildenberger4711-art.github.io/pepe-chess/`;
+    "🟩 Pepe Capture Daily\n" +
+    blocks + "\n" +
+    "Time: " + formatTime(elapsedSeconds) + "\n\n" +
+    "https://wmildenberger4711-art.github.io/pepe-chess/";
 
     navigator.clipboard.writeText(text).then(() => {
         alert("Copied to clipboard!");
@@ -406,15 +406,7 @@ https://wmildenberger4711-art.github.io/pepe-chess/`;
 // --------------------
 // BUTTON WIRING
 // --------------------
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("resetBtn")?.addEventListener("click", resetCurrentBoard);
-    document.getElementById("shareBtn")?.addEventListener("click", shareResult);
 
-    document.getElementById("pieceToggle")?.addEventListener("change", (e) => {
-        currentPieceSet = e.target.checked ? "classic" : "pepe";
-        drawBoard();
-    });
-});
 
 function getDailySeed(){
     const today = new Date();
@@ -460,7 +452,7 @@ function clearHighlights() {
 function selectPiece(cell) {
     clearHighlights();
 
-    const moves = getValidMoves(cell); // your existing logic
+    const moves = getValidMovesForSelected(cell); // your existing logic
 
     moves.forEach(move => {
         const targetCell = document.querySelector(`[data-row="${move.row}"][data-col="${move.col}"]`);
@@ -668,14 +660,62 @@ function attemptMove(fromX, fromY, toX, toY){
             setTimeout(() => {
                 gameFinished = true;
                 stopTimer();
+                markPlayed();
                 drawBoard();
             }, 400);
         }
     }
 }
 
+function getTodayLocal() {
+    const d = new Date();
+    return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+}
+
+function canPlayToday() {
+    const lastPlayed = localStorage.getItem("lastPlayedDate");
+    const today = getTodayLocal();
+
+    return lastPlayed !== today;
+}
+
+function markPlayed() {
+    const today = getTodayLocal();
+    localStorage.setItem("lastPlayedDate", today);
+}
+
+function showComeBackTomorrow() {
+    const board = document.getElementById("board");
+    const status = document.getElementById("status");
+
+    if (board) board.innerHTML = "";
+    if (status) {
+        status.textContent = "⏳ You already played today. Come back tomorrow!";
+    }
+
+    // optionally hide buttons
+}
+
 
 // --------------------
 // START
 // --------------------
-initGame();
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("resetBtn")?.addEventListener("click", resetCurrentBoard);
+    document.getElementById("shareBtn")?.addEventListener("click", shareResult);
+
+    const pieceToggle = document.getElementById("pieceToggle");
+    if (pieceToggle) {
+        pieceToggle.addEventListener("change", (e) => {
+            currentPieceSet = e.target.checked ? "classic" : "pepe";
+            drawBoard();
+        });
+    }
+
+    // ✅ START GAME HERE
+    if (!canPlayToday()) {
+        showComeBackTomorrow();
+    } else {
+        initGame();
+    }
+});
