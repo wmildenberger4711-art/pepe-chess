@@ -8,6 +8,8 @@ let originalBoards = [];
 let currentBoardIndex = 0;
 let highlightedMoves = [];
 let timerStarted = false;
+let draggedPiece = null;
+let dragFrom = null;
 
 let selected = null;
 let kingCaptured = false;
@@ -108,19 +110,19 @@ function drawBoard(){
             const cell = document.createElement("div");
             cell.classList.add("cell");
 
-            // checkerboard colors
+            // checkerboard
             if ((x + y) % 2 === 0){
                 cell.classList.add("light");
             } else {
                 cell.classList.add("dark");
             }
 
-            // selected piece highlight
+            // selection highlight
             if (selected && selected.x === x && selected.y === y){
                 cell.classList.add("selected");
             }
 
-            // ✅ highlight valid moves
+            // move highlights
             const isHighlighted = highlightedMoves.some(m => m.x === x && m.y === y);
             if (isHighlighted){
                 cell.classList.add("highlight-move");
@@ -135,9 +137,26 @@ function drawBoard(){
                 img.style.height = "100%";
                 img.style.objectFit = "contain";
 
+                // --------------------
+                // DRAG SUPPORT
+                // --------------------
+                img.draggable = true;
+
+                img.addEventListener("dragstart", (e) => {
+                    if (piece.moves >= 2) {
+                        e.preventDefault();
+                        return;
+                    }
+
+                    selected = { x, y };
+                    highlightedMoves = getValidMovesForSelected();
+
+                    e.dataTransfer.setData("text/plain", JSON.stringify({ x, y }));
+                });
+
                 cell.appendChild(img);
 
-                // fade after 1 move
+                // fade states
                 if (piece.moves === 1){
                     cell.classList.add("piece-half");
                 }
@@ -147,8 +166,28 @@ function drawBoard(){
                 }
             }
 
-            // click handler
+            // --------------------
+            // CLICK SUPPORT
+            // --------------------
             cell.onclick = () => handleClick(x, y);
+
+            // --------------------
+            // DROP SUPPORT
+            // --------------------
+            cell.addEventListener("dragover", (e) => {
+                e.preventDefault();
+            });
+
+            cell.addEventListener("drop", (e) => {
+                e.preventDefault();
+
+                const data = e.dataTransfer.getData("text/plain");
+                if (!data) return;
+
+                const from = JSON.parse(data);
+
+                attemptMove(from.x, from.y, x, y);
+            });
 
             boardDiv.appendChild(cell);
         }
@@ -197,12 +236,10 @@ function updateStatus(){
 // CLICK HANDLER
 // --------------------
 function handleClick(x, y){
-    // ✅ start timer on first meaningful interaction
     if (!timerStarted){
         const board = boards[currentBoardIndex];
         const clickedPiece = board[y][x];
 
-        // only start timer if user clicks a piece (not empty square)
         if (clickedPiece){
             timerStarted = true;
             startTimer();
@@ -227,7 +264,7 @@ function handleClick(x, y){
     }
 
     // --------------------
-    // Clicking same tile → deselect
+    // Deselect same tile
     // --------------------
     if (selected.x === x && selected.y === y){
         selected = null;
@@ -237,12 +274,11 @@ function handleClick(x, y){
     }
 
     const piece = board[selected.y][selected.x];
-    const targetPiece = board[y][x];
 
     // --------------------
-    // Empty square clicked → deselect
+    // Empty square → deselect
     // --------------------
-    if (!targetPiece){
+    if (!clickedPiece){
         selected = null;
         highlightedMoves = [];
         drawBoard();
@@ -250,61 +286,9 @@ function handleClick(x, y){
     }
 
     // --------------------
-    // Attempt move (capture only)
+    // Attempt move
     // --------------------
-    if (isValidMove(selected.x, selected.y, x, y)){
-
-        // enforce move limit
-        if (piece.moves >= 2) return;
-
-        // prevent capturing king
-        if (targetPiece.type === "king") return;
-
-        // make the capture
-        board[y][x] = piece;
-        board[selected.y][selected.x] = null;
-        piece.moves++;
-
-        // clear selection + highlights
-        selected = null;
-        highlightedMoves = [];
-
-        // --------------------
-        // win condition
-        // --------------------
-        if (countNonKings(board) === 0){
-            boardCompleted[currentBoardIndex] = true;
-
-            drawBoard();
-
-            if (currentBoardIndex < 4){
-                setTimeout(() => {
-                    currentBoardIndex++;
-                    selected = null;
-                    highlightedMoves = [];
-                    drawBoard();
-                }, 400);
-            } else {
-                setTimeout(() => {
-                    gameFinished = true;
-                    stopTimer();
-                    drawBoard();
-                }, 400);
-            }
-
-            return;
-        }
-
-        drawBoard();
-        return;
-    }
-
-    // --------------------
-    // Invalid move → reset selection
-    // --------------------
-    selected = null;
-    highlightedMoves = [];
-    drawBoard();
+    attemptMove(selected.x, selected.y, x, y);
 }
 
 // --------------------
@@ -640,6 +624,54 @@ function getPathSquares(board, fromX, fromY, toX, toY){
     }
 
     return squares;
+}
+
+function attemptMove(fromX, fromY, toX, toY){
+    const board = boards[currentBoardIndex];
+    const piece = board[fromY][fromX];
+    const targetPiece = board[toY][toX];
+
+    if (!piece) return;
+
+    // validate move rules
+    if (!isValidMove(fromX, fromY, toX, toY)) return;
+
+    // enforce limits
+    if (piece.moves >= 2) return;
+
+    // prevent king capture
+    if (targetPiece && targetPiece.type === "king") return;
+
+    // execute move
+    board[toY][toX] = piece;
+    board[fromY][fromX] = null;
+    piece.moves++;
+
+    // clear selection
+    selected = null;
+    highlightedMoves = [];
+
+    drawBoard();
+
+    // win condition (same as your original logic)
+    if (countNonKings(board) === 0){
+        boardCompleted[currentBoardIndex] = true;
+
+        if (currentBoardIndex < 4){
+            setTimeout(() => {
+                currentBoardIndex++;
+                selected = null;
+                highlightedMoves = [];
+                drawBoard();
+            }, 400);
+        } else {
+            setTimeout(() => {
+                gameFinished = true;
+                stopTimer();
+                drawBoard();
+            }, 400);
+        }
+    }
 }
 
 
