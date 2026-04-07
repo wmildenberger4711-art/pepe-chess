@@ -49,11 +49,32 @@ const pieceSets = {
 // --------------------
 // INIT
 // --------------------
+function getSeedForOffset(daysOffset = 0){
+    const d = new Date();
+    d.setDate(d.getDate() + daysOffset);
+    return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+}
+
+function boardsEqual(a, b){
+    return JSON.stringify(a) === JSON.stringify(b);
+}
+
 function initGame(){
-    const seed = getDailySeed();
     const pool = getBoardPool();
 
-    const selectedBoards = pickDailyBoards(pool, seed, 5);
+    const yesterdaySeed = getSeedForOffset(-1);
+    const yesterdayBoards = pickDailyBoards(pool, yesterdaySeed, 5);
+
+    let seed = getSeedForOffset(0);
+    let selectedBoards = pickDailyBoards(pool, seed, 5);
+
+    // Make sure today's 5-board set is not identical to yesterday's
+    let safety = 0;
+    while (boardsEqual(selectedBoards, yesterdayBoards) && safety < 50){
+        seed++;
+        selectedBoards = pickDailyBoards(pool, seed, 5);
+        safety++;
+    }
 
     originalBoards = selectedBoards;
 
@@ -66,7 +87,6 @@ function initGame(){
     drawBoard();
     updateRuleText();
 }
-
 
 
 // --------------------
@@ -414,10 +434,7 @@ function shareResult(){
 // --------------------
 
 
-function getDailySeed(){
-    const today = new Date();
-    return today.getFullYear()*10000 + (today.getMonth()+1)*100 + today.getDate();
-}
+
 
 function pickDailyBoards(pool, seed, count){
     const rng = mulberry32(seed);
