@@ -276,3 +276,28 @@ button:disabled {
     background: rgba(0, 0, 0, 0.354);
     pointer-events: none;
 }
+
+.tip-popup {
+    position: relative;
+    margin: 10px auto 16px;
+    padding: 12px 40px 12px 14px;
+    max-width: 420px;
+    background: #fff8c4;
+    border: 2px solid #d9c15f;
+    border-radius: 10px;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.tip-close {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    cursor: pointer;
+    color: #555;
+}

@@ -735,14 +735,21 @@ document.addEventListener("DOMContentLoaded", () => {
             currentPieceSet = e.target.checked ? "classic" : "pepe";
             drawBoard();
         });
-    }   
+    }
 
+    // ✅ Tip popup close
+    document.getElementById("closeTip")?.addEventListener("click", () => {
+        document.getElementById("tipPopup")?.remove();
+    });
+
+    // ✅ Daily check FIRST
     if (!canPlayToday()) {
         showComeBackTomorrow();
         return;
     }
-    initGame();
 
+    // ✅ Init game
+    initGame();
 
     drawBoard();
     updateStatus();
