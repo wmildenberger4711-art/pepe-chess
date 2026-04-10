@@ -419,7 +419,7 @@ function shareResult(){
     }).join("");
 
     const text =
-    "🟩 Pepe Capture Daily\n" +
+    "👑 Pepe Capture Daily\n" +
     blocks + "\n" +
     "Time: " + formatTime(elapsedSeconds) + "\n\n" +
     "https://wmildenberger4711-art.github.io/pepe-chess/";
