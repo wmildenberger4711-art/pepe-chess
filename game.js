@@ -686,7 +686,6 @@ if (gameFinished) return;
                 gameFinished = true;
                 stopTimer();
                 markPlayed();
-                localStorage.setItem("gameCompleted", "true");
                 localStorage.setItem("finalTime", elapsedSeconds);
                 drawBoard();
             }, 400);
@@ -723,11 +722,6 @@ function showComeBackTomorrow() {
     // optionally hide buttons
 }
 
-function hasCompletedToday() {
-    return localStorage.getItem("gameCompleted") === "true";
-}
-
-
 // --------------------
 // START
 // --------------------
@@ -741,22 +735,14 @@ document.addEventListener("DOMContentLoaded", () => {
             currentPieceSet = e.target.checked ? "classic" : "pepe";
             drawBoard();
         });
-    }
+    }   
 
-    // ✅ ALWAYS init first
+    if (!canPlayToday()) {
+        showComeBackTomorrow();
+        return;
+    }
     initGame();
 
-    const completed = hasCompletedToday();
-
-    if (completed) {
-        gameFinished = true;
-        stopTimer();
-
-        const savedTime = localStorage.getItem("finalTime");
-        if (savedTime) {
-            elapsedSeconds = parseInt(savedTime, 10);
-        }
-    }
 
     drawBoard();
     updateStatus();
