@@ -123,7 +123,7 @@ return [
 [
   [null,null,null,null,null,null],
   [null,null,null,null,null,null],
-  [null,null,null,{type:"knight",moves:0},null,null],
+  [null,null,null,{type:"king",moves:0},null,null],
   [{type:"rook",moves:0},null,null,null,{type:"bishop",moves:0},null],
   [{type:"rook",moves:0},null,null,{type:"bishop",moves:0},{type:"queen",moves:0},null],
   [null,null,null,null,null,null]
